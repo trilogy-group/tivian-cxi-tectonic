@@ -1,6 +1,6 @@
 {
   "name": "tectonic",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "Declarative data loading for React",
   "main": "transpiled/index.js",
   "scripts": {
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/tonyhb/tectonic.git"
+    "url": "git+ssh://git@github.com/gsbhalsted/tectonic.git"
   },
   "keywords": [
     "react",
@@ -24,9 +24,9 @@
   "author": "Tony Holdstock-Brown",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/tonyhb/tectonic/issues"
+    "url": "https://github.com/gsbhalsted/tectonic/issues"
   },
-  "homepage": "https://github.com/tonyhb/tectonic#readme",
+  "homepage": "https://github.com/gsbhalsted/tectonic#readme",
   "devDependencies": {
     "babel": "^6.5.2",
     "babel-cli": "^6.6.5",
