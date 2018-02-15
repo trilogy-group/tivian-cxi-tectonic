@@ -17,7 +17,7 @@ export default class TectonicSuperagent {
       } = sourceDef;
 
       // Allow for late generation of the URL string
-      if (typeof request === 'function') {
+      if (typeof url === 'function') {
         url = url(query.params);
       }
       
