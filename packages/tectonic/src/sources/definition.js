@@ -29,6 +29,7 @@ export type SourceDefinitionOpts = {
 
   // cacheFor may be set, defining the TTL for the response in seconds
   cacheFor: ?number;
+  link: ?Array<Object>
 };
 
 /**
@@ -45,6 +46,7 @@ export default class SourceDefinition {
   queryType: QueryType
 
   cacheFor: ?number
+  link: ?Array<Object>
 
   /**
    * Object of **required** parameters for the source (where values are defaults).
@@ -87,6 +89,7 @@ export default class SourceDefinition {
     model,
     queryType = GET,
     cacheFor,
+    link,
   }: SourceDefinitionOpts = {}) {
     if (id === undefined) {
       id = Math.floor(Math.random() * (1 << 30)).toString(16);
@@ -109,6 +112,7 @@ export default class SourceDefinition {
     this.queryType = queryType;
     this.setModelProperty(model);
     this.cacheFor = cacheFor;
+    this.link = link;
 
     // ensure that after setting properties the definition is valid
     this.validate();
