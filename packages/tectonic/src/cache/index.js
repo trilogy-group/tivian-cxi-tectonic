@@ -61,8 +61,7 @@ export default class Cache {
     // such that we can set the query expiry date correctly.
     const cacheFor = sourceDef.getCacheFor();
     if (cacheFor !== undefined && cacheFor !== null) {
-      expires = new Date();
-      expires.setSeconds(cacheFor);
+      expires = new Date(Date.now() + cacheFor * 1000);
     }
 
     if (query.queryType === DELETE) {
@@ -153,8 +152,7 @@ export default class Cache {
         // Use the lowest TTL.
         const sec = [provider.model.cacheFor, sourceDef.cacheFor].sort().shift();
         if (sec !== undefined && sec !== null) {
-          expires = new Date();
-          expires.setSeconds(sec);
+          expires = new Date(Date.now() + sec * 1000);
         }
 
         if (sourceDef.isPolymorphic()) {
