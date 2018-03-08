@@ -353,13 +353,13 @@ export default class Cache {
 
     const { data, cache, deleted } = map.toObject();
 
-    if (cache !== undefined && cache.expires !== undefined) {
-      const { expires } = cache;
+    if (cache !== undefined) {
+      const expires = cache.getIn(['expires']);
       // Check the expires header to see if the model is out of date.
       // Fudge the expiry date by +1 second to avoid timing issues.
       // XXX should we store expiry per-model or per query? This might not be
       // necessary
-      if (expires.setSeconds(expires.getSeconds() + 1) < new Date()) {
+      if (expires && expires.setSeconds(expires.getSeconds() + 1) < new Date()) {
         return false;
       }
     }
