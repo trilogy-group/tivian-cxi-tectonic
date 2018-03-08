@@ -108,6 +108,20 @@ export default function load(loadQueries: { [key: string]: Query } | Function = 
         }
 
         if (typeof loadQueries === 'function' && next !== undefined) {
+
+          // Remove expired queries
+          Object.keys(this.queries).forEach( queryId => {
+            const queryHash = this.queries[queryId].toString();
+
+            // Get the expiration 
+            const expiration = next.state.getIn(['queriesToExpiry', queryHash]);
+            const isInvalid = !expiration || expiration < new Date();
+
+            if (isInvalid) {
+              delete this.queries[queryId]; 
+            }
+          });
+
           const { ...others } = next;
           delete others.state;
 
