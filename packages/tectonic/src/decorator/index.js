@@ -113,12 +113,15 @@ export default function load(loadQueries: { [key: string]: Query } | Function = 
           Object.keys(this.queries).forEach( queryId => {
             const queryHash = this.queries[queryId].toString();
 
-            // Get the expiration 
+            // Get the expiration
             const expiration = next.state.getIn(['queriesToExpiry', queryHash]);
             const isInvalid = !expiration || expiration < new Date();
 
             if (isInvalid) {
-              delete this.queries[queryId]; 
+              const query = this.queries[queryId]
+              if (query.status && query.status !== 'PENDING') {
+                delete this.queries[queryId];
+              }
             }
           });
 
