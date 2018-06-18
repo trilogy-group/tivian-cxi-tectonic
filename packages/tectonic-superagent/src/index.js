@@ -78,7 +78,10 @@ export default class TectonicSuperagent {
     const params = url.match(/:([a-zA-Z](\w+)?)/g) || [];
     params.forEach(p => {
       let key = p.replace(':', '');
-      url = url.replace(p, encodeURIComponent(query.params[key]));
+      // Only replace if that param exists
+      if (query.params.hasOwnProperty(key)) {
+        url = url.replace(p, encodeURIComponent(query.params[key]));
+      }
     });
     return url;
   }
