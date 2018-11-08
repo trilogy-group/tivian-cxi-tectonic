@@ -101,6 +101,21 @@ describe('query', () => {
       assert.isFalse(q1.is(q2));
     });
 
+    it('it handles the _skipCache params config', () => {
+      let q1, q2;
+      let common = {
+        model: User,
+        queryType : GET,
+        fields: ['name'],
+        returnType: RETURNS_ITEM
+      };
+
+      q1 = new Query({ ...common, params: { id: 1, _skipCache: true } });
+      q2 = new Query({ ...common, params: { id: 1 } });
+      assert.deepEqual(q1.params, q2.params);
+      assert.isTrue(q1._skipCache);
+    });
+
     it('returns false with mismatching params', () => {
       let q1, q2;
       let common = {
