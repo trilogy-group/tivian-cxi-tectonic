@@ -17,12 +17,12 @@ export default class TectonicSuperagent {
       } = sourceDef;
 
       // Allow for late generation of the URL string
-      if (typeof request === 'function') {
+      if (typeof url === 'function') {
         url = url(query.params);
       }
-      
+
       url = inst.parseUrlParams({ url, query });
-      
+
       // Normalize method type
       method = method ? method.toUpperCase() : 'GET';
 
@@ -38,7 +38,7 @@ export default class TectonicSuperagent {
         r = opts.request(r);
       }
 
-      // Similarly, if there's a meta.request parameter we should use it to 
+      // Similarly, if there's a meta.request parameter we should use it to
       // transform the request for this particular source only
       if (typeof request === 'function') {
         r = request(r);
@@ -78,7 +78,10 @@ export default class TectonicSuperagent {
     const params = url.match(/:([a-zA-Z](\w+)?)/g) || [];
     params.forEach(p => {
       let key = p.replace(':', '');
-      url = url.replace(p, query.params[key]);
+      // Only replace if that param exists
+      if (query.params.hasOwnProperty(key)) {
+        url = url.replace(p, encodeURIComponent(query.params[key]));
+      }
     });
     return url;
   }

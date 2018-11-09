@@ -61,8 +61,7 @@ export default class Cache {
     // such that we can set the query expiry date correctly.
     const cacheFor = sourceDef.getCacheFor();
     if (cacheFor !== undefined && cacheFor !== null) {
-      expires = new Date();
-      expires.setSeconds(cacheFor);
+      expires = new Date(Date.now() + cacheFor * 1000);
     }
 
     if (query.queryType === DELETE) {
@@ -153,8 +152,7 @@ export default class Cache {
         // Use the lowest TTL.
         const sec = [provider.model.cacheFor, sourceDef.cacheFor].sort().shift();
         if (sec !== undefined && sec !== null) {
-          expires = new Date();
-          expires.setSeconds(sec);
+          expires = new Date(Date.now() + sec * 1000);
         }
 
         if (sourceDef.isPolymorphic()) {
@@ -355,13 +353,13 @@ export default class Cache {
 
     const { data, cache, deleted } = map.toObject();
 
-    if (cache !== undefined && cache.expires !== undefined) {
-      const { expires } = cache;
+    if (cache !== undefined) {
+      const expires = cache.getIn(['expires']);
       // Check the expires header to see if the model is out of date.
       // Fudge the expiry date by +1 second to avoid timing issues.
       // XXX should we store expiry per-model or per query? This might not be
       // necessary
-      if (expires.setSeconds(expires.getSeconds() + 1) < new Date()) {
+      if (expires && expires.setSeconds(expires.getSeconds() + 1) < new Date()) {
         return false;
       }
     }
