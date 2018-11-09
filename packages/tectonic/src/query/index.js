@@ -140,6 +140,14 @@ export default class Query {
     this.callback = callback;
     this.children = [];
 
+    // Overload params with a _skipCache
+    if (this.params._skipCache) {
+      this._skipCache = true;
+    } else {
+      this._skipCache = false;
+    }
+    delete this.params._skipCache;
+
     // To create query trees we need to iterate through each param and see if
     // the value is a function; if it is we assume this was created via
     // PropInspector and calculates this Query's parent query.

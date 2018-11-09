@@ -273,6 +273,11 @@ export default class BaseResolver {
   //
   // This returns a boolean indicating whether we can short circuit
   skipFromCache(query: Query, hash: QueryHash, status: Status, state: Map<*, *>): boolean {
+    // If configured with _skipCache, bypass cache altogether
+    if (query._skipCache) {
+      return false;
+    }
+
     if (!this.cache.hasQueryExpired(query, state)) {
       // Check if the query is in the cache. getQueryData returns a tuple; if
       // the second parameter of the tuple is true we already have data for this

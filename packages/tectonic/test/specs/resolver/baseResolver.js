@@ -155,6 +155,28 @@ describe('BaseResolver', () => {
         }, 75);
       });
 
+      it('does not use the cache when _skipCache is passed in params', (done) => {
+        const m = resolveAllManager();
+        let q = User.getItem({ id: 1 })
+
+        m.addQuery(q);
+        m.resolve();
+
+        window.setTimeout(() => {
+          let q = User.getItem({ id: 1, _skipCache: true })
+
+          const skipFromCacheSpy = sinon.spy(m.resolver, 'skipFromCache');
+
+          m.addQuery(q);
+          m.resolve();
+
+          assert.isTrue(skipFromCacheSpy.calledOnce);
+          assert.equal(skipFromCacheSpy.firstCall.returnValue, false);
+
+          done();
+        }, 75);
+      });
+
       it('uses cache with default params foodd', () => {
         const m = resolveAllManager();
         // create a query which will be supplemented
