@@ -281,6 +281,10 @@ export default class Model {
     return this.record.toJS();
   }
 
+  equals(other) {
+    return other && other.record && this.record.equals(other.record);
+  }
+
   /*
   set(key: string, value: any): Model {
     const newRecord = this.record.set(key, value);
