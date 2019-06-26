@@ -165,10 +165,8 @@ export default class Manager {
         } else {
           data = [];
         }
-      } else if (query.returnType === RETURNS_LIST) {
-        data = data.map(d => new Model(d));
       } else {
-        data = new Model(data);
+        data = cache.getIdentical(Model, data);
       }
 
       props[prop] = data;
