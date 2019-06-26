@@ -24,6 +24,7 @@ import type {
   StatusOpts,
 } from '../status/status';
 
+const EMPTY_ARRAY = [];
 /**
  * Cache represents an abstraction over redux' store for saving and reading
  * data.
@@ -37,12 +38,67 @@ export default class Cache {
    * store holds a reference to the redux store
    */
   store: Object;
+  modelCache: Object
+  modelArrayCache: Object
 
   constructor(store: Object) {
     if (store === undefined || store.dispatch === undefined || store.getState === undefined) {
       throw new Error('Cache must be defined with a redux store');
     }
     this.store = store;
+    this.modelCache = new WeakMap();
+    this.modelArrayCache = [];
+  }
+
+  getIdenticalArray(Model, data: Object) {
+    // [bgh] due to IE not supporting WeakSet, we use the keys in the WeakMap only
+    const length = data.length;
+    if (length === 0) {
+      return EMPTY_ARRAY;
+    }
+
+    const newArr = Object.freeze(data.map(d => this.getIdenticalModel(Model, d)));
+    // [bgh] Find the index of the cached array
+    const cachedIndex = this.modelArrayCache.findIndex(function(arr, index) {
+      // Are they the same length
+      // Do they have the same contents
+      return (arr.length === length) && newArr.every(function(d, index) {
+        return arr[index] === d;
+      })
+    });
+
+    // [bgh] Item not cached, add it to the front of the array
+    if (cachedIndex === -1) {
+      // [bgh] add it to the front of the array
+      this.modelArrayCache.splice(0, 0, newArr);
+    } else {
+      // [bgh] if it's cached, move the item to the front of the array
+      const arr = this.modelArrayCache.splice(cachedIndex, 1);
+      this.modelArrayCache.splice(0, 0, arr[0]);
+    }
+
+    // [bgh] trim the list down to max items
+    const MAX_ITEMS = 1000;
+    this.modelArrayCache.splice(1000, Number.MAX_VALUE);
+
+    return this.modelArrayCache[0];
+  }
+
+  getIdenticalModel(Model, data: Object) {
+    if (!this.modelCache.has(data)) {
+      const key = data;
+      const value = Object.freeze(new Model(data.toJS()));
+      this.modelCache.set(key, value);
+    }
+    return this.modelCache.get(data);
+  }
+
+  getIdentical(Model, data: Object) {
+    if (Array.isArray(data)) {
+      return this.getIdenticalArray(Model, data);
+    } else {
+      return this.getIdenticalModel(Model, data);
+    }
   }
 
   /**
@@ -367,7 +423,7 @@ export default class Cache {
     if (deleted === true) {
       return false;
     }
-    return data.toJS();
+    return data;
   }
 
   getQueryStatus(query: Query, state: Map<*, *>): Status {
