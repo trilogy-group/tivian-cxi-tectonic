@@ -290,7 +290,7 @@ export default class BaseResolver {
         debug('query has cached data; success', query.toString(), query);
         this.statusMap[hash] = { status: 'SUCCESS' };
         if (typeof query.callback === 'function') {
-          query.callback( null, cache.getIdentical(query.model, data) );
+          query.callback( null, this.cache.getIdentical(query.model, data) );
         }
         return true;
       }
