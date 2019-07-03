@@ -14,6 +14,8 @@ import {
   RETURNS_ITEM,
   RETURNS_LIST,
   GET,
+  CREATE,
+  UPDATE,
   DELETE,
 } from '../consts';
 import type {
@@ -349,7 +351,7 @@ export default class Cache {
     // data. This ensures that any resolver retries the data, as a resolver
     // should ONLY skip the request if this returns a tuple with false
     // indicating it's not in the cache.
-    if (query.queryType !== GET) {
+    if (![GET, CREATE, UPDATE].includes(query.queryType)) {
       return [undefined, false];
     }
 
