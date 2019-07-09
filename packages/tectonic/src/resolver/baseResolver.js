@@ -440,22 +440,26 @@ export default class BaseResolver {
     this.cache.storeQuery(query, sourceDef, data, expires);
 
     if (typeof query.callback === 'function') {
-      // Get ImmutableJS object from Cache here.
-      const state = this.store.getState().tectonic;
-      const [ cacheData, ok ] = this.cache.getQueryData(query, state);
-      // [bgh] If the data is in the cache, get the identical one
-      if (ok) {
-        query.callback(null, this.cache.getIdentical(query.model, cacheData));
+      if (!data) {
+        query.callback(null, data);
       } else {
-        // Convert to tectonic model before returning
-        let tectonicData;
-        let Model = query.model;
-        if (Array.isArray(data)) {
-           tectonicData = data.map(d => new Model(d));
+        // Get ImmutableJS object from Cache here.
+        const state = this.store.getState().tectonic;
+        const [ cacheData, ok ] = this.cache.getQueryData(query, state);
+        // [bgh] If the data is in the cache, get the identical one
+        if (ok) {
+          query.callback(null, this.cache.getIdentical(query.model, cacheData));
         } else {
-          tectonicData = new Model(data);
+          // Convert to tectonic model before returning
+          let tectonicData;
+          let Model = query.model;
+          if (Array.isArray(data)) {
+             tectonicData = data.map(d => new Model(d));
+          } else {
+            tectonicData = new Model(data);
+          }
+          query.callback(null, tectonicData);
         }
-        query.callback(null, tectonicData);
       }
     }
   }
