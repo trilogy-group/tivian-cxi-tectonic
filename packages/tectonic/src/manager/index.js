@@ -1,5 +1,6 @@
 // @flow
 
+import deepEqual from 'deep-equal';
 import Sources from '../sources';
 import Cache from '../cache';
 import Status from '../status/status';
@@ -151,7 +152,9 @@ export default class Manager {
         status = new Status({ status: 'PENDING' });
       }
 
-      props.status[prop] = status;
+      if (!deepEqual(props.status[prop], status)) {
+        props.status[prop] = status;
+      }
 
       // Attempt to load the data regardless of the query status. This will
       // return the previous data, if possible.
