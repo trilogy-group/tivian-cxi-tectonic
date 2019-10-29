@@ -1,5 +1,6 @@
 // @flow
 
+import deepEqual from 'deep-equal';
 import { Map, fromJS } from 'immutable';
 
 export const UPDATE_QUERY_STATUSES = '@@tectonic/update-query-statuses';
@@ -64,7 +65,18 @@ const reducer = (state: Object = defaultState, action: ActionObject) => {
 
     return state.withMutations((s) => {
       Object.keys(data).forEach((key) => {
-        s.mergeIn(['data', key], fromJS(data[key]));
+        // Only update the data if it is different
+
+        var isIdentical = Object.keys(data[key]).every(subkey => {
+          var path = ['data', key, subkey, 'data']
+          let cachedData = s.getIn(path);
+          let newData = data[key][subkey]['data'];
+          return !!cachedData && deepEqual(cachedData.toJS(), newData);
+        })
+
+        if (!isIdentical) {
+          s.mergeIn(['data', key], fromJS(data[key]));
+        }
       });
       s.setIn(['queriesToIds', query.toString()], query.returnedIds);
       s.setIn(['queriesToExpiry', query.toString()], expires);
