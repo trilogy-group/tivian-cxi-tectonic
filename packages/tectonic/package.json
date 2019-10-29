@@ -55,9 +55,12 @@
   },
   "dependencies": {
     "debug": "^2.6.9",
-    "deep-equal": "^1.0.1",
-    "immutable": "^3.8.2",
-    "react": "^0.14.9",
-    "react-redux": "^4.4.9"
+    "deep-equal": "^1.0.1"
+  },
+  "peerDependencies": {
+    "react": "^16.0",
+    "react-redux": "^7.0",
+    "prop-types": "^15.0",
+    "immutable": "^3.0"
   }
 }

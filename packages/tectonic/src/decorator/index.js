@@ -1,6 +1,8 @@
+/*eslint camelcase: ["error", {allow: ["^UNSAFE_"]}]*/
 // @flow
 
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Map } from 'immutable';
 import d from 'debug';
@@ -37,11 +39,11 @@ export default function load(loadQueries: { [key: string]: Query } | Function = 
 
       static propTypes = {
         // State is all redux state
-        state: React.PropTypes.instanceOf(Map),
+        state: PropTypes.instanceOf(Map),
       }
 
       static contextTypes = {
-        manager: React.PropTypes.instanceOf(Manager),
+        manager: PropTypes.instanceOf(Manager),
       }
 
       /**
@@ -87,7 +89,7 @@ export default function load(loadQueries: { [key: string]: Query } | Function = 
         }
       }
 
-      componentWillMount() {
+      UNSAFE_componentWillMount() {
         this.addAndResolveQueries();
       }
 
@@ -101,7 +103,7 @@ export default function load(loadQueries: { [key: string]: Query } | Function = 
        * And even then, we should only re-resolve queries that have changed.
        *
        */
-      componentWillReceiveProps(next) {
+      UNSAFE_componentWillReceiveProps(next) {
         // Prevent some unnecessary work computing queries if the props didn't change
         if (deepEqual(next, this.props)) {
           return;
