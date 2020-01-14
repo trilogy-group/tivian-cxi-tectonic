@@ -96,6 +96,9 @@ export default class Cache {
   }
 
   getIdentical(Model, data: Object) {
+    if (data === undefined) {
+      return undefined;
+    }
     if (Array.isArray(data)) {
       return this.getIdenticalArray(Model, data);
     } else {
@@ -374,24 +377,20 @@ export default class Cache {
     if (query.returnType === RETURNS_ITEM) {
       // XXX tidy this pluck
       const map = state.getIn(['data', modelName, returnedIds.values().next().value]);
-      const data = this.processCachedModelMap(map);
-      if (data === false) {
-        return [undefined, false];
-      }
-      return [data, true];
+      return this.processCachedModelMap(map);
     }
 
     // This returns many items in a list; iterate through all of the returned
     // IDs and fetch our data
+    // data = [ [Object, bool], ... ]
     const data = Array.from(returnedIds).map(
       id => this.processCachedModelMap(state.getIn(['data', modelName, id]))
-    );
+    ).filter(d => !!d[0]);
 
-    if (data.some(item => item === false)) {
-      return [data.filter(Boolean), false];
-    }
+    const cachedData = data.map(m => m[0]);
+    const isCachedValid = data.every(item => item[1]);
 
-    return [data, true];
+    return [cachedData, isCachedValid];
   }
 
   /**
@@ -404,9 +403,9 @@ export default class Cache {
    * @param Map
    * @return Object
    */
-  processCachedModelMap(map: ?Map<*, *>): Object | boolean {
+  processCachedModelMap(map: ?Map<*, *>): [Object, bool] {
     if (map === undefined || map === null) {
-      return false;
+      return [undefined, false];
     }
 
     const { data, cache, deleted } = map.toObject();
@@ -418,14 +417,14 @@ export default class Cache {
       // XXX should we store expiry per-model or per query? This might not be
       // necessary
       if (expires && expires.setSeconds(expires.getSeconds() + 1) < new Date()) {
-        return false;
+        return [data, false];
       }
     }
 
     if (deleted === true) {
-      return false;
+      return [undefined, false];
     }
-    return data;
+    return [data, true];
   }
 
   getQueryStatus(query: Query, state: Map<*, *>): Status {

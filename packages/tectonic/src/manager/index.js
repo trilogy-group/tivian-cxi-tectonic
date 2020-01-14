@@ -161,8 +161,7 @@ export default class Manager {
       let data = cache.getQueryData(query, state)[0];
 
       if (data === undefined) {
-        // THere was no data - add defaults, which is a blank model or an empty
-        // array
+        // There was no data - add defaults, which is a blank model or an empty
         if (query.returnType === RETURNS_ITEM) {
           data = query.model.blank();
         } else {
