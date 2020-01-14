@@ -445,10 +445,11 @@ export default class BaseResolver {
       } else {
         // Get ImmutableJS object from Cache here.
         const state = this.store.getState().tectonic;
-        const [ cacheData, ok ] = this.cache.getQueryData(query, state);
+        const cacheData = this.cache.getQueryData(query, state)[0];
         // [bgh] If the data is in the cache, get the identical one
-        if (ok) {
-          query.callback(null, this.cache.getIdentical(query.model, cacheData));
+        let identicalData = this.cache.getIdentical(query.model, cacheData);
+        if (identicalData) {
+          query.callback(null, identicalData);
         } else {
           // Convert to tectonic model before returning
           let tectonicData;
