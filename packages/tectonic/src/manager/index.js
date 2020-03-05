@@ -104,17 +104,28 @@ export default class Manager {
     this.resolver.resolveAll(this.sources.definitions);
   }
 
+  // Return True/False/NaN. NaN is returned if there is no expiration.
+  isQueryExpired(query) {
+    if (!query) {
+      return NaN;
+    }
+
+    const state = this.store.getState().tectonic;
+    const expiry = state.getIn(['queriesToExpiry', query.hash()], 0);
+    // There is no expiration, return NaN
+    if (0 === expiry) {
+      return NaN;
+    }
+
+    // There is an expiration, return if it is expired
+    return expiry < new Date();
+  }
+
   /**
    * props returns the query data and loading data for a given set of queries.
    *
    * @param object Object of prop names => queries
    * @param Immutable.Map tectonic state
-   * @param bool   whether to ignore cache when loading data. this should be
-   *               true when fetching props for rendering a component only
-   *               - this will always happen after a cache has become invalid.
-   *               however, when using query props inside a decorator this
-   *               should be false so that stale props are never passed into
-   *               a Query constructor.
    */
   props(queries: { [key: string]: Query }, state: ?Map<*, *> = undefined) {
     const { cache } = this;
