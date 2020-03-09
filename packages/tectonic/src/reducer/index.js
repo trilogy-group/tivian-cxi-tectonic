@@ -1,7 +1,7 @@
 // @flow
 
-import deepEqual from 'deep-equal';
 import { Map, fromJS } from 'immutable';
+const isEqual = require("react-fast-compare");
 
 export const UPDATE_QUERY_STATUSES = '@@tectonic/update-query-statuses';
 export const UPDATE_DATA = '@@tectonic/update-data';
@@ -71,7 +71,7 @@ const reducer = (state: Object = defaultState, action: ActionObject) => {
           var path = ['data', key, subkey, 'data']
           let cachedData = s.getIn(path);
           let newData = data[key][subkey]['data'];
-          return !!cachedData && deepEqual(cachedData.toJS(), newData);
+          return !!cachedData && isEqual(cachedData.toJS(), newData);
         })
 
         if (!isIdentical) {
