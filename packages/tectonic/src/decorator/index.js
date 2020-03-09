@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Map } from 'immutable';
 import d from 'debug';
-import deepEqual from 'deep-equal';
 
 import Manager from '../manager';
 import Query from '../query';
@@ -20,6 +19,7 @@ import {
 
 import type { QueryOpts } from '../query/index';
 
+const isEqual = require("react-fast-compare");
 const debug = d('tectonic:decorator');
 
 /**
@@ -105,7 +105,7 @@ export default function load(loadQueries: { [key: string]: Query } | Function = 
        */
       UNSAFE_componentWillReceiveProps(next) {
         // Prevent some unnecessary work computing queries if the props didn't change
-        if (deepEqual(next, this.props)) {
+        if (isEqual(next, this.props)) {
           return;
         }
 

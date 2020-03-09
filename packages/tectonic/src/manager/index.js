@@ -1,6 +1,5 @@
 // @flow
 
-import deepEqual from 'deep-equal';
 import Sources from '../sources';
 import Cache from '../cache';
 import Status from '../status/status';
@@ -11,6 +10,7 @@ import type {
   Props,
 } from '../consts';
 
+const isEqual = require("react-fast-compare");
 export type ManagerOpts = {
   store: Object, // todo: redux flow
   drivers: { [key: string]: Function }, // todo: Driver type
@@ -163,7 +163,7 @@ export default class Manager {
         status = new Status({ status: 'PENDING' });
       }
 
-      if (!deepEqual(props.status[prop], status)) {
+      if (!isEqual(props.status[prop], status)) {
         props.status[prop] = status;
       }
 
