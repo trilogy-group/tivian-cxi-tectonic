@@ -1,50 +1,53 @@
-/*eslint camelcase: ["error", {allow: ["^UNSAFE_"]}]*/
 // @flow
 
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { Map } from 'immutable';
-import d from 'debug';
+import React, { Component } from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
+import { Map } from "immutable";
+import d from "debug";
 
-import Manager from '../manager';
-import Query from '../query';
-import PropInspector from './propInspector';
-import {
-  GET,
-  CREATE,
-  UPDATE,
-  DELETE,
-} from '../consts';
+import Manager from "../manager";
+import Query from "../query";
+import PropInspector from "./propInspector";
+import { GET, CREATE, UPDATE, DELETE } from "../consts";
+import { TectonicContext } from "../component";
 
-import type { QueryOpts } from '../query/index';
+import type { QueryOpts } from "../query/index";
 
 const isEqual = require("react-fast-compare");
-const debug = d('tectonic:decorator');
+const debug = d("tectonic:decorator");
 
 /**
  * Load is our decorator which accepts an object of queries or a function which
  * takes (state, params) as arguments and returns an object of queries.
  *
  */
-export default function load(loadQueries: { [key: string]: Query } | Function = {}) {
+export default function load(
+  loadQueries: { [key: string]: Query } | Function = {}
+) {
   // TODO:
   // 3. Call the thunk with store.getState() and this.props
   // 4. Take result of thunk and transform into an array (if it's not already)
   // 5. Iterate through array and figure out how to call and load data
 
   return (WrappedComponent: Class<React$Component<*, *, *>>) => {
+    function TectonicComponentContextProvider(props) {
+      return (
+        <TectonicContext.Consumer>
+          {(manager) => {
+            return <TectonicComponent manager={manager} {...props} />;
+          }}
+        </TectonicContext.Consumer>
+      );
+    }
+
     class TectonicComponent extends Component {
-      static WrappedComponent = WrappedComponent
+      static WrappedComponent = WrappedComponent;
 
       static propTypes = {
         // State is all redux state
         state: PropTypes.instanceOf(Map),
-      }
-
-      static contextTypes = {
-        manager: PropTypes.instanceOf(Manager),
-      }
+      };
 
       /**
        * Each component stores its resolved queries from each render. This
@@ -54,26 +57,30 @@ export default function load(loadQueries: { [key: string]: Query } | Function = 
        *
        */
       // eslint-disable-next-line react/sort-comp
-      queries: { [key: string]: Query } = {}
-      inspector: PropInspector
+      queries: { [key: string]: Query } = {};
+      inspector: PropInspector;
 
       constructor(...args) {
         super(...args);
-        const { manager } = this.context;
+        const { manager } = this.props;
 
         // TODO: Test that adding .success to this.queries doesn't affect the
         // constructor queries
 
         // If the queries is a function we need to evaulate it with the current
         // redux state and component props passed in to get our query object.
-        if (typeof loadQueries === 'function') {
+        if (typeof loadQueries === "function") {
           this.inspector = new PropInspector({ queryFunc: loadQueries });
 
           // remove the tectonic state from props and pass it to the query
           // function as state. all remaining props are just standard props :)
           const { ...props } = this.props;
           delete props.state;
-          this.queries = this.inspector.computeDependencies(props, manager, manager.store.getState());
+          this.queries = this.inspector.computeDependencies(
+            props,
+            manager,
+            manager.store.getState()
+          );
         } else {
           this.queries = loadQueries;
           // These are static queries, but the component may have already been
@@ -87,9 +94,7 @@ export default function load(loadQueries: { [key: string]: Query } | Function = 
             this.queries[q].returnedIds = new Set();
           });
         }
-      }
 
-      UNSAFE_componentWillMount() {
         this.addAndResolveQueries();
       }
 
@@ -103,43 +108,50 @@ export default function load(loadQueries: { [key: string]: Query } | Function = 
        * And even then, we should only re-resolve queries that have changed.
        *
        */
-      UNSAFE_componentWillReceiveProps(next) {
+      componentDidUpdate(prevProps) {
+        // UNSAFE_componentWillReceiveProps(next) {
         // Prevent some unnecessary work computing queries if the props didn't change
-        if (isEqual(next, this.props)) {
+        if (isEqual(prevProps, this.props)) {
           return;
         }
 
-        if (typeof loadQueries === 'function' && next !== undefined) {
-
+        if (typeof loadQueries === "function" && this.props !== undefined) {
           // Remove expired queries
-          Object.keys(this.queries).forEach( queryId => {
+          Object.keys(this.queries).forEach((queryId) => {
             const queryHash = this.queries[queryId].toString();
 
             // Get the expiration
-            const expiration = next.state.getIn(['queriesToExpiry', queryHash]);
+            const expiration = this.props.state.getIn([
+              "queriesToExpiry",
+              queryHash,
+            ]);
             const isInvalid = !expiration || expiration < new Date();
 
             if (isInvalid) {
-              const query = this.queries[queryId]
-              if (query.status && query.status !== 'PENDING') {
+              const query = this.queries[queryId];
+              if (query.status && query.status !== "PENDING") {
                 delete this.queries[queryId];
               }
             }
           });
 
-          const { ...others } = next;
+          const { ...others } = this.props;
           delete others.state;
 
           // use the existing this.queries object from the previous invokation
           // to get new params, then re-invoke queries
           const props = {
             ...others,
-            ...this.context.manager.props(this.queries),
+            ...this.props.manager.props(this.queries),
           };
 
           // Generate new queries by computing dependencies with the new props
           // and state.
-          const newQueries = this.inspector.computeDependencies(props, null, this.context.manager.store.getState());
+          const newQueries = this.inspector.computeDependencies(
+            props,
+            null,
+            this.props.manager.store.getState()
+          );
 
           // Assign the props newQueries to this.queries; this is gonna retain
           // query statuses for successful queries and not re-query them even if
@@ -152,7 +164,7 @@ export default function load(loadQueries: { [key: string]: Query } | Function = 
             }
           });
 
-          debug('computed new queries for component', this.queries);
+          debug("computed new queries for component", this.queries);
 
           if (haveNewQueries) {
             this.addAndResolveQueries();
@@ -167,7 +179,7 @@ export default function load(loadQueries: { [key: string]: Query } | Function = 
       addAndResolveQueries() {
         const {
           queries,
-          context: { manager },
+          props: { manager },
         } = this;
 
         const queryKeys = Object.keys(queries);
@@ -176,7 +188,7 @@ export default function load(loadQueries: { [key: string]: Query } | Function = 
           return;
         }
 
-        debug('adding queries to resolver', queries);
+        debug("adding queries to resolver", queries);
 
         // Resolve the queries and load the data.
         queryKeys.forEach((q) => {
@@ -188,33 +200,42 @@ export default function load(loadQueries: { [key: string]: Query } | Function = 
 
       createModel = (opts, callback) => {
         this.query({ ...opts, queryType: CREATE }, callback);
-      }
+      };
 
       updateModel = (opts, callback) => {
         this.query({ ...opts, queryType: UPDATE }, callback);
-      }
+      };
 
       deleteModel = (opts, callback) => {
         this.query({ ...opts, queryType: DELETE }, callback);
-      }
+      };
 
       getModel = (opts, callback) => {
         this.query({ ...opts, queryType: GET }, callback);
-      }
+      };
 
       query = (opts: QueryOpts, callback) => {
         const { queryType, model } = opts;
 
         if (model === undefined) {
-          throw new Error('The \'model\' key must be defined when making a query');
+          throw new Error(
+            "The 'model' key must be defined when making a query"
+          );
         }
 
         if ([GET, CREATE, UPDATE, DELETE].indexOf(queryType) === -1) {
-          throw new Error(`queryType must be one of ${CREATE}, ${UPDATE}, ${DELETE}`);
+          throw new Error(
+            `queryType must be one of ${CREATE}, ${UPDATE}, ${DELETE}`
+          );
         }
 
-        if ([UPDATE, DELETE].indexOf(queryType) >= 0 && opts.modelId === undefined) {
-          throw new Error(`The 'modelId' key must be set for ${UPDATE} or ${DELETE} queries`);
+        if (
+          [UPDATE, DELETE].indexOf(queryType) >= 0 &&
+          opts.modelId === undefined
+        ) {
+          throw new Error(
+            `The 'modelId' key must be set for ${UPDATE} or ${DELETE} queries`
+          );
         }
 
         if (queryType === CREATE && opts.body === undefined) {
@@ -226,14 +247,12 @@ export default function load(loadQueries: { [key: string]: Query } | Function = 
         // for a list; this needs no returnType field.
         const query = new Query({ ...opts, callback });
 
-        const {
-          context: { manager },
-        } = this;
+        const { manager } = this.props;
 
         // TODO: keep track of query in load component for future devtools?
         manager.addQuery(query);
         manager.resolve();
-      }
+      };
 
       /**
        * load allows us to automatically add and resolve queries generated by
@@ -244,7 +263,7 @@ export default function load(loadQueries: { [key: string]: Query } | Function = 
        * });
        */
       load = (queries) => {
-        if (typeof queries !== 'object') {
+        if (typeof queries !== "object") {
           throw new Error(`Load argument must be an object (ie.
 this.props.load({
   propName: Model.getItem({ id: 1 })
@@ -263,12 +282,12 @@ this.props.load({
         });
 
         this.addAndResolveQueries();
-      }
+      };
 
       render() {
         const {
           queries,
-          context: { manager },
+          props: { manager },
         } = this;
 
         const props = {
@@ -285,10 +304,13 @@ this.props.load({
         // remove tectonic state passed to this container
         delete props.state;
 
-        return <WrappedComponent { ...props } />;
+        return <WrappedComponent {...props} />;
       }
     }
+    // TectonicComponent.contextTypes = TectonicContext;
 
-    return connect(state => ({ state: state.tectonic }))(TectonicComponent);
+    return connect((state) => ({ state: state.tectonic }))(
+      TectonicComponentContextProvider
+    );
   };
 }
