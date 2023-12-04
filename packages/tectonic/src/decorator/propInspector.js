@@ -3,7 +3,7 @@
 import type Query from '../query';
 import type Manager from '../manager';
 
-const isEqual = require("react-fast-compare");
+import deepEqual from 'deep-equal';
 
 type ConstructorOpts = {
   queryFunc: Function
@@ -71,7 +71,7 @@ export default class PropInspector {
     if (manager !== null && manager !== undefined) {
       let computedProps = manager.props(queryMap);
 
-      while (isEqual(queryMap, queryFunc({ ...props, computedProps }, reduxState)) === false) {
+      while (deepEqual(queryMap, queryFunc({ ...props, computedProps }, reduxState)) === false) {
         queryMap = queryFunc({ ...props, computedProps }, reduxState);
         computedProps = manager.props(queryMap);
       }

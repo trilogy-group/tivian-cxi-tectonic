@@ -35,17 +35,17 @@
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-0": "^6.24.1",
-    "flow-bin": "^0.182.0",
+    "flow-bin": "^0.222.0",
     "redux": "^4.2.0"
   },
   "dependencies": {
     "debug": "^4.3.3",
-    "react-fast-compare": "^3.2.0"
+    "deep-equal": "^2.2.3"
   },
   "peerDependencies": {
     "immutable": "^4.1",
     "prop-types": "^15.8",
-    "react": "^16 || ^17",
+    "react": "^17",
     "react-redux": "^8.0.2"
   }
 }

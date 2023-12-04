@@ -16,7 +16,7 @@ import type {
   QueryHash,
 } from '../consts';
 
-const isEqual = require("react-fast-compare");
+import deepEqual from 'deep-equal';
 
 export type QueryOpts = {
   model: Class<Model> | Model;
@@ -211,7 +211,7 @@ export default class Query {
       'body',
     ];
 
-    return comparisons.every(field => isEqual((this: Object)[field], (item: Object)[field]) === true);
+    return comparisons.every(field => deepEqual((this: Object)[field], (item: Object)[field]) === true);
   }
 
   /**

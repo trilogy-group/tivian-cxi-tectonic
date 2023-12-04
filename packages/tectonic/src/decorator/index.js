@@ -14,7 +14,7 @@ import { TectonicContext } from "../component";
 
 import type { QueryOpts } from "../query/index";
 
-const isEqual = require("react-fast-compare");
+import deepEqual from 'deep-equal';
 const debug = d("tectonic:decorator");
 
 /**
@@ -111,7 +111,7 @@ export default function load(
       componentDidUpdate(prevProps) {
         // UNSAFE_componentWillReceiveProps(next) {
         // Prevent some unnecessary work computing queries if the props didn't change
-        if (isEqual(prevProps, this.props)) {
+        if (deepEqual(prevProps, this.props)) {
           return;
         }
 
