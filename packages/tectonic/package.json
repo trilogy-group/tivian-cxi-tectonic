@@ -1,6 +1,6 @@
 {
   "name": "gs-tectonic",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "description": "Declarative data loading for React",
   "main": "transpiled/index.js",
   "scripts": {
